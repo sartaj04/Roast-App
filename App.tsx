@@ -28,6 +28,8 @@ function App(): React.JSX.Element {
   const [roastResult, setRoastResult] = useState('');
   const [freeGenerates, setFreeGenerates] = useState(5);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isImageModalVisible, setIsImageModalVisible] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -61,15 +63,44 @@ function App(): React.JSX.Element {
   };
 
   const handleFilePicker = async () => {
+    if (freeGenerates <= 0) {
+      Alert.alert('Limit Reached', 'You have used all your free generates.');
+      return;
+    }
+
     try {
       const res = await DocumentPicker.pick({
-        type: [DocumentPicker.types.allFiles],
+        type: [DocumentPicker.types.images],
       });
 
+      setSelectedFile(res[0]);
+      setIsImageModalVisible(true);
+    } catch (err) {
+      if (DocumentPicker.isCancel(err)) {
+        console.log('User cancelled the picker');
+      } else {
+        console.error('Error picking file:', err);
+        Alert.alert('Error', 'Something went wrong! Please try again.');
+      }
+    }
+  };
+
+  const handleGenerateRoastFromImage = async () => {
+    if (freeGenerates <= 0) {
+      Alert.alert('Limit Reached', 'You have used all your free generates.');
+      return;
+    }
+
+    if (!selectedFile) {
+      Alert.alert('No File Selected', 'Please select a file first.');
+      return;
+    }
+
+    try {
       const file = {
-        uri: res.uri,
-        type: res.type,
-        name: res.name,
+        uri: selectedFile.uri,
+        type: selectedFile.type,
+        name: selectedFile.name,
       };
 
       const formData = new FormData();
@@ -81,7 +112,7 @@ function App(): React.JSX.Element {
       formData.append('roast_level', roastLevel.toString());
       formData.append('language', language);
 
-      const response = await axios.post('http://10.0.2.2:8003/generate-roast', formData, {
+      const response = await axios.post('http://10.0.2.2:8003/generate-roast-from-image', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -89,13 +120,10 @@ function App(): React.JSX.Element {
 
       setRoastResult(response.data.roast);
       setFreeGenerates(freeGenerates - 1);
+      setIsImageModalVisible(false); // Close the modal after generating the roast
     } catch (err) {
-      if (DocumentPicker.isCancel(err)) {
-        console.log('User cancelled the picker');
-      } else {
-        console.error('Error picking file:', err);
-        Alert.alert('Error', 'Something went wrong! Please try again.');
-      }
+      console.error('Error generating roast from image:', err);
+      Alert.alert('Error', 'Something went wrong! Please try again.');
     }
   };
 
@@ -163,6 +191,39 @@ function App(): React.JSX.Element {
             <Text style={styles.buttonText}>Generate Roast</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.cancelButton} onPress={() => setIsModalVisible(false)}>
+            <Text style={styles.buttonText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
+      <Modal isVisible={isImageModalVisible}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Upload an image to roast</Text>
+          <Picker
+            selectedValue={roastLevel}
+            style={styles.picker}
+            onValueChange={(itemValue, itemIndex) => setRoastLevel(itemValue)}
+          >
+            <Picker.Item label="Light Tease" value={0} />
+            <Picker.Item label="Good Ribbing" value={1} />
+            <Picker.Item label="Fiery Burn" value={2} />
+            <Picker.Item label="Scorching Hot" value={3} />
+          </Picker>
+          <Picker
+            selectedValue={language}
+            style={styles.picker}
+            onValueChange={(itemValue, itemIndex) => setLanguage(itemValue)}
+          >
+            <Picker.Item label="English" value="en" />
+            <Picker.Item label="Hindi (Transliteration)" value="hi-translit" />
+            <Picker.Item label="Urdu" value="ur" />
+            <Picker.Item label="Telugu" value="te" />
+            <Picker.Item label="Spanish" value="es" />
+          </Picker>
+          <TouchableOpacity style={styles.generateButton} onPress={handleGenerateRoastFromImage}>
+            <Text style={styles.buttonText}>Generate Roast</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.cancelButton} onPress={() => setIsImageModalVisible(false)}>
             <Text style={styles.buttonText}>Cancel</Text>
           </TouchableOpacity>
         </View>
