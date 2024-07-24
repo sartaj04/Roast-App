@@ -53,7 +53,7 @@ async def generate_roast(
 
         roast_level_text = ["a light tease", "a good ribbing", "a fiery burn", "scorching hot"]
         prompt += f" Make it {roast_level_text[roast_level]}."
-
+        print(language)
         # Add language-specific instructions
         prompt += f" Write the roast in {language}."
 
@@ -99,7 +99,7 @@ async def generate_roast_from_image(
         }
 
         roast_level_text = ["a light tease", "a good ribbing", "a fiery burn", "scorching hot"]
-        prompt = f"Create a fun, sassy roast of 250 characters for this image. Make it {roast_level_text[roast_level]}. Write the roast in {language}."
+        prompt = f"Create a fun, sassy roast of 250 characters for this image. Make it {roast_level_text[roast_level]}. Write the roast in {language}. If it's a screenshot of conversation then write a roast to reply to last message"
 
         payload = {
             "model": "gpt-4o-mini",  # Hypothetical model that can handle images and text

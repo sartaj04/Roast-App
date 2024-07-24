@@ -14,12 +14,7 @@ import axios from 'axios';
 import DocumentPicker from 'react-native-document-picker';
 import Modal from 'react-native-modal';
 import { Picker } from '@react-native-picker/picker';
-
 import LinearGradient from 'react-native-linear-gradient';
-
-import {
-  Colors,
-} from 'react-native/Libraries/NewAppScreen';
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -129,161 +124,191 @@ function App(): React.JSX.Element {
   };
 
   return (
-    <SafeAreaView style={[backgroundStyle, styles.container]}>
-      <LinearGradient
-      colors={['#ff0000', '#ff6666']} // Array of colors for the gradient
-      style={styles.container}
+    <LinearGradient
+      colors={['#000000', '#ff0000']}
+      style={styles.gradient}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }}
     >
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <View style={styles.header}>
-        <Text style={styles.logoText}>RoastGPT</Text>
-        {/* <View style={styles.icons}>
-          <TouchableOpacity style={styles.icon}>
-            <Icon name="person-circle" size={30} color="#fff" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.icon}>
-            <Icon name="settings-outline" size={30} color="#fff" />
-          </TouchableOpacity>
-        </View> */}
-      </View>
-      <View style={styles.cardContainer}>
-        <TouchableOpacity style={styles.card} onPress={handleFilePicker}>
-          <Text style={styles.cardText}>Upload Image</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.card} onPress={() => setIsModalVisible(true)}>
-          <Text style={styles.cardText}>Describe a person to roast</Text>
-        </TouchableOpacity>
-      </View>
-      {roastResult ? (
-        <View style={styles.resultContainer}>
-          <Text style={styles.roastText}>{roastResult}</Text>
-          <Text style={styles.freeGeneratesText}>Free Generates Left: {freeGenerates}</Text>
+      <SafeAreaView style={styles.container}>
+        <StatusBar
+          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+          backgroundColor="#000000"
+        />
+        <View style={styles.header}>
+          <Text style={styles.logoText}>Roast Master</Text>
         </View>
-      ) : null}
+        <View style={styles.cardContainer}>
+          <TouchableOpacity style={styles.card} onPress={handleFilePicker}>
+            <Text style={styles.cardText}>Upload Image</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.card} onPress={() => setIsModalVisible(true)}>
+            <Text style={styles.cardText}>Describe a person to roast</Text>
+          </TouchableOpacity>
+        </View>
+        {roastResult ? (
+          <View style={styles.resultContainer}>
+            <Text style={styles.roastText}>{roastResult}</Text>
+            <Text style={styles.freeGeneratesText}>Free Generates Left: {freeGenerates}</Text>
+          </View>
+        ) : null}
 
-      <Modal isVisible={isModalVisible}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Describe a person to roast</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter description"
-            placeholderTextColor="#999"
-            value={description}
-            onChangeText={setDescription}
-          />
-          <Picker
-            selectedValue={roastLevel}
-            style={styles.picker}
-            onValueChange={(itemValue, itemIndex) => setRoastLevel(itemValue)}
-          >
-            <Picker.Item label="Light Tease" value={0} />
-            <Picker.Item label="Good Ribbing" value={1} />
-            <Picker.Item label="Fiery Burn" value={2} />
-            <Picker.Item label="Scorching Hot" value={3} />
-          </Picker>
-          <Picker
-            selectedValue={language}
-            style={styles.picker}
-            onValueChange={(itemValue, itemIndex) => setLanguage(itemValue)}
-          >
-            <Picker.Item label="English" value="en" />
-            <Picker.Item label="Hindi (Transliteration)" value="hi-translit" />
-            <Picker.Item label="Urdu" value="ur" />
-            <Picker.Item label="Telugu" value="te" />
-            <Picker.Item label="Spanish" value="es" />
-          </Picker>
-          <TouchableOpacity style={styles.generateButton} onPress={handleGenerateRoast}>
-            <Text style={styles.buttonText}>Generate Roast</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.cancelButton} onPress={() => setIsModalVisible(false)}>
-            <Text style={styles.buttonText}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
+        <Modal isVisible={isModalVisible}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Describe a person to roast</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter description"
+              placeholderTextColor="#999"
+              value={description}
+              onChangeText={setDescription}
+            />
+            <Picker
+              selectedValue={roastLevel}
+              style={styles.picker}
+              onValueChange={(itemValue, itemIndex) => setRoastLevel(itemValue)}
+            >
+              <Picker.Item label="Light Tease" value={0} />
+              <Picker.Item label="Good Ribbing" value={1} />
+              <Picker.Item label="Fiery Burn" value={2} />
+              <Picker.Item label="Scorching Hot" value={3} />
+            </Picker>
+            <Picker
+              selectedValue={language}
+              style={styles.picker}
+              onValueChange={(itemValue, itemIndex) => setLanguage(itemValue)}
+            >
+              <Picker.Item label="English" value="english" />
+              <Picker.Item label="Hindi (Transliteration)" value="hindi-transliteration" />
+              <Picker.Item label="Hindi" value="hindi" />
+              <Picker.Item label="Telugu" value="telugu" />
+              <Picker.Item label="Bengali" value="bengali" />
+              <Picker.Item label="Gujarati" value="gujarati" />
+              <Picker.Item label="Kannada" value="kannada" />
+              <Picker.Item label="Malayalam" value="malayalam" />
+              <Picker.Item label="Marathi" value="marathi" />
+              <Picker.Item label="Punjabi" value="punjabi" />
+              <Picker.Item label="Tamil" value="tamil" />
+              <Picker.Item label="Urdu" value="urdu" />
+              <Picker.Item label="Arabic" value="arabic" />
+              <Picker.Item label="Spanish" value="spanish" />
+              <Picker.Item label="French" value="french" />
+              <Picker.Item label="German" value="german" />
+              <Picker.Item label="Italian" value="italian" />
+              <Picker.Item label="Portuguese" value="portuguese" />
+              <Picker.Item label="Dutch" value="dutch" />
+              <Picker.Item label="Russian" value="russian" />
+              <Picker.Item label="Swedish" value="swedish" />
+              <Picker.Item label="Danish" value="danish" />
+              <Picker.Item label="Norwegian" value="norwegian" />
+              <Picker.Item label="Finnish" value="finnish" />
+              <Picker.Item label="Greek" value="greek" />
+              
 
-      <Modal isVisible={isImageModalVisible}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Upload an image to roast</Text>
-          <Picker
-            selectedValue={roastLevel}
-            style={styles.picker}
-            onValueChange={(itemValue, itemIndex) => setRoastLevel(itemValue)}
-          >
-            <Picker.Item label="Light Tease" value={0} />
-            <Picker.Item label="Good Ribbing" value={1} />
-            <Picker.Item label="Fiery Burn" value={2} />
-            <Picker.Item label="Scorching Hot" value={3} />
-          </Picker>
-          <Picker
-            selectedValue={language}
-            style={styles.picker}
-            onValueChange={(itemValue, itemIndex) => setLanguage(itemValue)}
-          >
-            <Picker.Item label="English" value="en" />
-            <Picker.Item label="Hindi (Transliteration)" value="hi-translit" />
-            <Picker.Item label="Urdu" value="ur" />
-            <Picker.Item label="Telugu" value="te" />
-            <Picker.Item label="Spanish" value="es" />
-          </Picker>
-          <TouchableOpacity style={styles.generateButton} onPress={handleGenerateRoastFromImage}>
-            <Text style={styles.buttonText}>Generate Roast</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.cancelButton} onPress={() => setIsImageModalVisible(false)}>
-            <Text style={styles.buttonText}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-      </LinearGradient>
-    </SafeAreaView>
+            </Picker>
+            <TouchableOpacity style={styles.generateButton} onPress={handleGenerateRoast}>
+              <Text style={styles.buttonText}>Generate Roast</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.cancelButton} onPress={() => setIsModalVisible(false)}>
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+
+        <Modal isVisible={isImageModalVisible}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Upload an image to roast</Text>
+            <Picker
+              selectedValue={roastLevel}
+              style={styles.picker}
+              onValueChange={(itemValue, itemIndex) => setRoastLevel(itemValue)}
+            >
+              <Picker.Item label="Light Tease" value={0} />
+              <Picker.Item label="Good Ribbing" value={1} />
+              <Picker.Item label="Fiery Burn" value={2} />
+              <Picker.Item label="Scorching Hot" value={3} />
+            </Picker>
+            <Picker
+              selectedValue={language}
+              style={styles.picker}
+              onValueChange={(itemValue, itemIndex) => setLanguage(itemValue)}
+            >
+              <Picker.Item label="English" value="english" />
+              <Picker.Item label="Hindi (Transliteration)" value="hindi-transliteration" />
+              <Picker.Item label="Hindi" value="hindi" />
+              <Picker.Item label="Telugu" value="telugu" />
+              <Picker.Item label="Bengali" value="bengali" />
+              <Picker.Item label="Gujarati" value="gujarati" />
+              <Picker.Item label="Kannada" value="kannada" />
+              <Picker.Item label="Malayalam" value="malayalam" />
+              <Picker.Item label="Marathi" value="marathi" />
+              <Picker.Item label="Punjabi" value="punjabi" />
+              <Picker.Item label="Tamil" value="tamil" />
+              <Picker.Item label="Urdu" value="urdu" />
+              <Picker.Item label="Arabic" value="arabic" />
+              <Picker.Item label="Spanish" value="spanish" />
+              <Picker.Item label="French" value="french" />
+              <Picker.Item label="German" value="german" />
+              <Picker.Item label="Italian" value="italian" />
+              <Picker.Item label="Portuguese" value="portuguese" />
+              <Picker.Item label="Dutch" value="dutch" />
+              <Picker.Item label="Russian" value="russian" />
+              <Picker.Item label="Swedish" value="swedish" />
+              <Picker.Item label="Danish" value="danish" />
+              <Picker.Item label="Norwegian" value="norwegian" />
+              <Picker.Item label="Finnish" value="finnish" />
+              <Picker.Item label="Greek" value="greek" />
+              
+
+            </Picker>
+            <TouchableOpacity style={styles.generateButton} onPress={handleGenerateRoastFromImage}>
+              <Text style={styles.buttonText}>Generate Roast</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.cancelButton} onPress={() => setIsImageModalVisible(false)}>
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
     padding: 16,
-    backgroundColor: 'red',
   },
   header: {
     flex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
   },
   logoText: {
-    flex:1,
     fontSize: 32,
     fontWeight: 'bold',
     color: '#fff',
-    textAlign:'center',
-    justifyContent:'center',
-    alignItems:'center'
-  },
-  icons: {
-    flexDirection: 'row',
-  },
-  icon: {
-    marginLeft: 15,
+    textAlign: 'center',
   },
   cardContainer: {
-    
-    flex:6,
+    flex: 6,
     flexDirection: 'column',
     justifyContent: 'space-around',
     marginVertical: 0,
   },
   card: {
-    flex:1,
+    flex: 1,
     backgroundColor: '#1C1C1E',
     borderRadius: 15,
     width: '100%',
     justifyContent: 'center',
-    marginVertical:10,
+    marginVertical: 10,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
@@ -300,7 +325,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   resultContainer: {
-    flex:4,
+    flex: 4,
     padding: 20,
     backgroundColor: '#1C1C1E',
     borderRadius: 10,
