@@ -11,7 +11,7 @@ import {
   useColorScheme,
 } from 'react-native';
 import axios from 'axios';
-import DocumentPicker from 'react-native-document-picker';
+import DocumentPicker, { pick } from 'react-native-document-picker';
 import Modal from 'react-native-modal';
 import { Picker } from '@react-native-picker/picker';
 import LinearGradient from 'react-native-linear-gradient';
@@ -125,10 +125,11 @@ function App(): React.JSX.Element {
 
   return (
     <LinearGradient
-      colors={['#000000', '#ff0000']}
+      colors={['#a10303', '#4a0404']}
       style={styles.gradient}
       start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      angle={90}
     >
       <SafeAreaView style={styles.container}>
         <StatusBar
@@ -139,10 +140,10 @@ function App(): React.JSX.Element {
           <Text style={styles.logoText}>Roast Master</Text>
         </View>
         <View style={styles.cardContainer}>
-          <TouchableOpacity style={styles.card} onPress={handleFilePicker}>
+          <TouchableOpacity style={styles.card} onPress={handleFilePicker} activeOpacity={0.7}>
             <Text style={styles.cardText}>Upload Image</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.card} onPress={() => setIsModalVisible(true)}>
+          <TouchableOpacity style={styles.card} onPress={() => setIsModalVisible(true)} activeOpacity={0.7}>
             <Text style={styles.cardText}>Describe a person to roast</Text>
           </TouchableOpacity>
         </View>
@@ -153,17 +154,23 @@ function App(): React.JSX.Element {
           </View>
         ) : null}
 
-        <Modal isVisible={isModalVisible}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Describe a person to roast</Text>
+        <Modal isVisible={isModalVisible} swipeDirection={"down"} coverScreen collapsable onBackdropPress={()=>setIsModalVisible(false)} style={styles.modalContainer}
+          presentationStyle='overFullScreen'>
+           <View style={styles.modalContent}>
+           <Text style={styles.modalTitle}>Describe a person to roast</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Enter description"
-              placeholderTextColor="#999"
+              placeholder="Enter a detailed description of the person"
               value={description}
-              onChangeText={setDescription}
+              onChangeText={(text) => setDescription(text)}
+              keyboardType="numbers-and-punctuation"
+              multiline
+              style={styles.describeInput}
+              placeholderTextColor={"#fff"}
+              numberOfLines={10}
             />
+            <View style={styles.picketContainer}>
             <Picker
+            dropdownIconColor={"#fff"}
               selectedValue={roastLevel}
               style={styles.picker}
               onValueChange={(itemValue, itemIndex) => setRoastLevel(itemValue)}
@@ -173,52 +180,59 @@ function App(): React.JSX.Element {
               <Picker.Item label="Fiery Burn" value={2} />
               <Picker.Item label="Scorching Hot" value={3} />
             </Picker>
+            </View>
+            <View style={styles.picketContainer}>
             <Picker
-              selectedValue={language}
-              style={styles.picker}
-              onValueChange={(itemValue, itemIndex) => setLanguage(itemValue)}
-            >
-              <Picker.Item label="English" value="english" />
-              <Picker.Item label="Hindi (Transliteration)" value="hindi-transliteration" />
-              <Picker.Item label="Hindi" value="hindi" />
-              <Picker.Item label="Telugu" value="telugu" />
-              <Picker.Item label="Bengali" value="bengali" />
-              <Picker.Item label="Gujarati" value="gujarati" />
-              <Picker.Item label="Kannada" value="kannada" />
-              <Picker.Item label="Malayalam" value="malayalam" />
-              <Picker.Item label="Marathi" value="marathi" />
-              <Picker.Item label="Punjabi" value="punjabi" />
-              <Picker.Item label="Tamil" value="tamil" />
-              <Picker.Item label="Urdu" value="urdu" />
-              <Picker.Item label="Arabic" value="arabic" />
-              <Picker.Item label="Spanish" value="spanish" />
-              <Picker.Item label="French" value="french" />
-              <Picker.Item label="German" value="german" />
-              <Picker.Item label="Italian" value="italian" />
-              <Picker.Item label="Portuguese" value="portuguese" />
-              <Picker.Item label="Dutch" value="dutch" />
-              <Picker.Item label="Russian" value="russian" />
-              <Picker.Item label="Swedish" value="swedish" />
-              <Picker.Item label="Danish" value="danish" />
-              <Picker.Item label="Norwegian" value="norwegian" />
-              <Picker.Item label="Finnish" value="finnish" />
-              <Picker.Item label="Greek" value="greek" />
-              
+            
+            dropdownIconColor={"#fff"}
+             selectedValue={language}
+             style={styles.picker}
+             onValueChange={(itemValue, itemIndex) => setLanguage(itemValue)}
+           >
+             <Picker.Item label="English" value="english" />
+             <Picker.Item label="Hindi (Transliteration)" value="hindi-transliteration" />
+             <Picker.Item label="Hindi" value="hindi" />
+             <Picker.Item label="Telugu" value="telugu" />
+             <Picker.Item label="Bengali" value="bengali" />
+             <Picker.Item label="Gujarati" value="gujarati" />
+             <Picker.Item label="Kannada" value="kannada" />
+             <Picker.Item label="Malayalam" value="malayalam" />
+             <Picker.Item label="Marathi" value="marathi" />
+             <Picker.Item label="Punjabi" value="punjabi" />
+             <Picker.Item label="Tamil" value="tamil" />
+             <Picker.Item label="Urdu" value="urdu" />
+             <Picker.Item label="Arabic" value="arabic" />
+             <Picker.Item label="Spanish" value="spanish" />
+             <Picker.Item label="French" value="french" />
+             <Picker.Item label="German" value="german" />
+             <Picker.Item label="Italian" value="italian" />
+             <Picker.Item label="Portuguese" value="portuguese" />
+             <Picker.Item label="Dutch" value="dutch" />
+             <Picker.Item label="Russian" value="russian" />
+             <Picker.Item label="Swedish" value="swedish" />
+             <Picker.Item label="Danish" value="danish" />
+             <Picker.Item label="Norwegian" value="norwegian" />
+             <Picker.Item label="Finnish" value="finnish" />
+             <Picker.Item label="Greek" value="greek" />
+             
 
-            </Picker>
+           </Picker>
+            </View>
             <TouchableOpacity style={styles.generateButton} onPress={handleGenerateRoast}>
               <Text style={styles.buttonText}>Generate Roast</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.cancelButton} onPress={() => setIsModalVisible(false)}>
-              <Text style={styles.buttonText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
+            </View>
+           
+          
         </Modal>
 
-        <Modal isVisible={isImageModalVisible}>
-          <View style={styles.modalContent}>
+        <Modal isVisible={isImageModalVisible} swipeDirection={"up"} coverScreen collapsable onBackdropPress={()=>setIsImageModalVisible(false)} style={styles.modalContainer}
+          presentationStyle='overFullScreen' onSwipeComplete={()=>setIsImageModalVisible(false)}>
+            <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Upload an image to roast</Text>
+            <View style={styles.picketContainer}>
             <Picker
+            dropdownIconColor={"#fff"}
               selectedValue={roastLevel}
               style={styles.picker}
               onValueChange={(itemValue, itemIndex) => setRoastLevel(itemValue)}
@@ -228,7 +242,10 @@ function App(): React.JSX.Element {
               <Picker.Item label="Fiery Burn" value={2} />
               <Picker.Item label="Scorching Hot" value={3} />
             </Picker>
-            <Picker
+            </View>
+            <View style={styles.picketContainer}>
+              <Picker
+              dropdownIconColor={"#fff"}
               selectedValue={language}
               style={styles.picker}
               onValueChange={(itemValue, itemIndex) => setLanguage(itemValue)}
@@ -261,13 +278,13 @@ function App(): React.JSX.Element {
               
 
             </Picker>
+            </View>
             <TouchableOpacity style={styles.generateButton} onPress={handleGenerateRoastFromImage}>
               <Text style={styles.buttonText}>Generate Roast</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.cancelButton} onPress={() => setIsImageModalVisible(false)}>
-              <Text style={styles.buttonText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
+            
+            </View>
+          
         </Modal>
       </SafeAreaView>
     </LinearGradient>
@@ -281,7 +298,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    padding: 16,
+    padding: 20,
+    
   },
   header: {
     flex: 1,
@@ -291,10 +309,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logoText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontSize: 28,
+    fontWeight: '800',
+    color: 'white',
     textAlign: 'center',
+    textTransform: 'uppercase',
   },
   cardContainer: {
     flex: 6,
@@ -353,54 +372,56 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',
-    marginVertical: 10,
-  },
-  cancelButton: {
-    backgroundColor: '#FF3B30',
-    paddingVertical: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginVertical: 10,
+    marginVertical:50,
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  modalContent: {
+  modalContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
+    margin: 0,
+    padding: 0,
+    width: "100%",
+  },
+  modalContent:{
+    width: "100%",
+    flex: 0.875,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
     backgroundColor: '#1C1C1E',
-    padding: 20,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    padding: 20, 
+    paddingTop: 50,
   },
   modalTitle: {
     color: '#fff',
-    fontSize: 18,
-    marginBottom: 10,
+    fontSize: 20,
+    marginBottom:30,
+    fontWeight: 'bold',
   },
-  input: {
-    height: 40,
-    borderColor: 'gray',
+  describeInput: {
+    padding: 20,
+    height: 200,
+    textAlign: "left",
+    textAlignVertical: "top",
     borderWidth: 1,
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    marginBottom: 16,
-    color: '#fff',
-    width: '100%',
+    borderColor: "#fff",
+    borderRadius: 10,
+    color: "#fff",
+
+  },
+  picketContainer: {
+    marginVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: "#fff",
   },
   picker: {
-    height: 50,
     width: '100%',
     color: '#fff',
     backgroundColor: '#1C1C1E',
-    marginBottom: 16,
+    
   },
 });
 
