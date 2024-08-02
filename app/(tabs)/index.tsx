@@ -11,10 +11,25 @@ import {
   useColorScheme,
 } from 'react-native';
 import axios from 'axios';
-import DocumentPicker, { pick } from 'react-native-document-picker';
+import DocumentPicker from 'react-native-document-picker';
 import Modal from 'react-native-modal';
 import { Picker } from '@react-native-picker/picker';
 import LinearGradient from 'react-native-linear-gradient';
+
+const encodeImageToBase64 = async (uri: string): Promise<string> => {
+  const response = await fetch(uri);
+  const blob = await response.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64Data = (reader.result as string).split(',')[1]; // Extract base64 part
+      console.log('Base64 Data Preview:', base64Data.slice(0, 50)); // Log first 50 characters
+      resolve(base64Data);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -25,10 +40,13 @@ function App(): React.JSX.Element {
   const [freeGenerates, setFreeGenerates] = useState(5);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState<any>(null);
 
-  const backgroundStyle = {
-    backgroundColor: '#2C2C2E',
+  const openAI_APIKey = 'sk-proj-QcFy0UGdb8EFfBJaKZ2fT3BlbkFJ9zhygX0fmxTxSuXqOxFw'; // Replace with your OpenAI API key
+
+  const generateRoastPrompt = (description: string, roastLevel: number, language: string) => {
+    const roastLevels = ["a light tease", "a good ribbing", "a fiery burn", "scorching hot"];
+    return `Create a fun, sassy roast of 250 characters for ${description}. Make it ${roastLevels[roastLevel]}. Write the roast in ${language}.`;
   };
 
   const handleGenerateRoast = async () => {
@@ -38,20 +56,31 @@ function App(): React.JSX.Element {
     }
 
     try {
-      const formData = new FormData();
-      formData.append('description', description);
-      formData.append('roast_level', roastLevel.toString());
-      formData.append('language', language);
-
-      const response = await axios.post('http://10.0.2.2:8003/generate-roast', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
+      const prompt = generateRoastPrompt(description, roastLevel, language);
+      const response = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model: 'gpt-3.5-turbo',
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 150,
+          temperature: 0.7,
         },
-      });
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${openAI_APIKey}`,
+          },
+        }
+      );
 
-      setRoastResult(response.data.roast);
-      setFreeGenerates(freeGenerates - 1);
-      setIsModalVisible(false); // Close the modal after generating the roast
+      const choices = response.data.choices;
+      if (choices && choices.length > 0) {
+        setRoastResult(choices[0].message.content.trim());
+        setFreeGenerates(freeGenerates - 1);
+        setIsModalVisible(false); // Close the modal after generating the roast
+      } else {
+        setRoastResult('No response from API.');
+      }
     } catch (error) {
       console.error('Error generating roast:', error);
       Alert.alert('Error', 'Something went wrong! Please try again.');
@@ -93,36 +122,67 @@ function App(): React.JSX.Element {
     }
 
     try {
-      const file = {
-        uri: selectedFile.uri,
-        type: selectedFile.type,
-        name: selectedFile.name,
+      const base64Image = await encodeImageToBase64(selectedFile.uri);
+      console.log('Base64 Image Length:', base64Image.length);
+
+      const roastLevelText = ["a light tease", "a good ribbing", "a fiery burn", "scorching hot"];
+      const prompt = `Create a fun, sassy roast of 250 characters for this image. Make it ${roastLevelText[roastLevel]}. Write the roast in ${language}.`;
+
+      const payload = {
+        model: 'gpt-4o-mini',  // Ensure you have access to this model
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: prompt },
+              { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64Image}` } }
+            ]
+          }
+        ],
+        max_tokens: 300,
+        temperature: 0.7,
       };
 
-      const formData = new FormData();
-      formData.append('file', {
-        uri: file.uri,
-        type: file.type,
-        name: file.name,
-      });
-      formData.append('roast_level', roastLevel.toString());
-      formData.append('language', language);
+      console.log('Payload:', JSON.stringify(payload, null, 2));
 
-      const response = await axios.post('http://10.0.2.2:8003/generate-roast-from-image', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        payload,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${openAI_APIKey}`,
+          },
+        }
+      );
 
-      setRoastResult(response.data.roast);
-      setFreeGenerates(freeGenerates - 1);
-      setIsImageModalVisible(false); // Close the modal after generating the roast
+      console.log('Response:', response.data);
+
+      const choices = response.data.choices;
+      if (choices && choices.length > 0) {
+        setRoastResult(choices[0].message.content.trim());
+        setFreeGenerates(freeGenerates - 1);
+        setIsImageModalVisible(false); // Close the modal after generating the roast
+      } else {
+        setRoastResult('No response from API.');
+      }
     } catch (err) {
       console.error('Error generating roast from image:', err);
-      Alert.alert('Error', 'Something went wrong! Please try again.');
+
+      if (err.response) {
+        console.log('Data:', err.response.data);
+        console.log('Status:', err.response.status);
+        console.log('Headers:', err.response.headers);
+        Alert.alert('Error', `API responded with status: ${err.response.status}`);
+      } else if (err.request) {
+        console.log('Request:', err.request);
+        Alert.alert('Error', 'No response from API server.');
+      } else {
+        console.log('Error Message:', err.message);
+        Alert.alert('Error', 'Failed to make request. Check console for details.');
+      }
     }
   };
-
   return (
     <LinearGradient
       colors={['#a10303', '#4a0404']}
@@ -154,10 +214,10 @@ function App(): React.JSX.Element {
           </View>
         ) : null}
 
-        <Modal isVisible={isModalVisible} swipeDirection={"down"} coverScreen collapsable onBackdropPress={()=>setIsModalVisible(false)} style={styles.modalContainer}
+        <Modal isVisible={isModalVisible} swipeDirection={"down"} coverScreen collapsable onBackdropPress={() => setIsModalVisible(false)} style={styles.modalContainer}
           presentationStyle='overFullScreen'>
-           <View style={styles.modalContent}>
-           <Text style={styles.modalTitle}>Describe a person to roast</Text>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Describe a person to roast</Text>
             <TextInput
               placeholder="Enter a detailed description of the person"
               value={description}
@@ -169,122 +229,113 @@ function App(): React.JSX.Element {
               numberOfLines={10}
             />
             <View style={styles.picketContainer}>
-            <Picker
-            dropdownIconColor={"#fff"}
-              selectedValue={roastLevel}
-              style={styles.picker}
-              onValueChange={(itemValue, itemIndex) => setRoastLevel(itemValue)}
-            >
-              <Picker.Item label="Light Tease" value={0} />
-              <Picker.Item label="Good Ribbing" value={1} />
-              <Picker.Item label="Fiery Burn" value={2} />
-              <Picker.Item label="Scorching Hot" value={3} />
-            </Picker>
+              <Picker
+                dropdownIconColor={"#fff"}
+                selectedValue={roastLevel}
+                style={styles.picker}
+                onValueChange={(itemValue, itemIndex) => setRoastLevel(itemValue)}
+              >
+                <Picker.Item label="Light Tease" value={0} />
+                <Picker.Item label="Good Ribbing" value={1} />
+                <Picker.Item label="Fiery Burn" value={2} />
+                <Picker.Item label="Scorching Hot" value={3} />
+              </Picker>
             </View>
             <View style={styles.picketContainer}>
-            <Picker
-            
-            dropdownIconColor={"#fff"}
-             selectedValue={language}
-             style={styles.picker}
-             onValueChange={(itemValue, itemIndex) => setLanguage(itemValue)}
-           >
-             <Picker.Item label="English" value="english" />
-             <Picker.Item label="Hindi (Transliteration)" value="hindi-transliteration" />
-             <Picker.Item label="Hindi" value="hindi" />
-             <Picker.Item label="Telugu" value="telugu" />
-             <Picker.Item label="Bengali" value="bengali" />
-             <Picker.Item label="Gujarati" value="gujarati" />
-             <Picker.Item label="Kannada" value="kannada" />
-             <Picker.Item label="Malayalam" value="malayalam" />
-             <Picker.Item label="Marathi" value="marathi" />
-             <Picker.Item label="Punjabi" value="punjabi" />
-             <Picker.Item label="Tamil" value="tamil" />
-             <Picker.Item label="Urdu" value="urdu" />
-             <Picker.Item label="Arabic" value="arabic" />
-             <Picker.Item label="Spanish" value="spanish" />
-             <Picker.Item label="French" value="french" />
-             <Picker.Item label="German" value="german" />
-             <Picker.Item label="Italian" value="italian" />
-             <Picker.Item label="Portuguese" value="portuguese" />
-             <Picker.Item label="Dutch" value="dutch" />
-             <Picker.Item label="Russian" value="russian" />
-             <Picker.Item label="Swedish" value="swedish" />
-             <Picker.Item label="Danish" value="danish" />
-             <Picker.Item label="Norwegian" value="norwegian" />
-             <Picker.Item label="Finnish" value="finnish" />
-             <Picker.Item label="Greek" value="greek" />
-             
-
-           </Picker>
+              <Picker
+                dropdownIconColor={"#fff"}
+                selectedValue={language}
+                style={styles.picker}
+                onValueChange={(itemValue, itemIndex) => setLanguage(itemValue)}
+              >
+                <Picker.Item label="English" value="english" />
+                <Picker.Item label="Hindi (Transliteration)" value="hindi-transliteration" />
+                <Picker.Item label="Hindi" value="hindi" />
+                <Picker.Item label="Telugu" value="telugu" />
+                <Picker.Item label="Bengali" value="bengali" />
+                <Picker.Item label="Gujarati" value="gujarati" />
+                <Picker.Item label="Kannada" value="kannada" />
+                <Picker.Item label="Malayalam" value="malayalam" />
+                <Picker.Item label="Marathi" value="marathi" />
+                <Picker.Item label="Punjabi" value="punjabi" />
+                <Picker.Item label="Tamil" value="tamil" />
+                <Picker.Item label="Urdu" value="urdu" />
+                <Picker.Item label="Arabic" value="arabic" />
+                <Picker.Item label="Spanish" value="spanish" />
+                <Picker.Item label="French" value="french" />
+                <Picker.Item label="German" value="german" />
+                <Picker.Item label="Italian" value="italian" />
+                <Picker.Item label="Portuguese" value="portuguese" />
+                <Picker.Item label="Dutch" value="dutch" />
+                <Picker.Item label="Russian" value="russian" />
+                <Picker.Item label="Swedish" value="swedish" />
+                <Picker.Item label="Danish" value="danish" />
+                <Picker.Item label="Norwegian" value="norwegian" />
+                <Picker.Item label="Finnish" value="finnish" />
+                <Picker.Item label="Greek" value="greek" />
+              </Picker>
             </View>
             <TouchableOpacity style={styles.generateButton} onPress={handleGenerateRoast}>
               <Text style={styles.buttonText}>Generate Roast</Text>
             </TouchableOpacity>
-            </View>
-           
-          
+          </View>
         </Modal>
 
-        <Modal isVisible={isImageModalVisible} swipeDirection={"up"} coverScreen collapsable onBackdropPress={()=>setIsImageModalVisible(false)} style={styles.modalContainer}
-          presentationStyle='overFullScreen' onSwipeComplete={()=>setIsImageModalVisible(false)}>
-            <View style={styles.modalContent}>
+        <Modal isVisible={isImageModalVisible} swipeDirection={"up"} coverScreen collapsable onBackdropPress={() => setIsImageModalVisible(false)} style={styles.modalContainer}
+          presentationStyle='overFullScreen' onSwipeComplete={() => setIsImageModalVisible(false)}>
+          <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Upload an image to roast</Text>
             <View style={styles.picketContainer}>
-            <Picker
-            dropdownIconColor={"#fff"}
-              selectedValue={roastLevel}
-              style={styles.picker}
-              onValueChange={(itemValue, itemIndex) => setRoastLevel(itemValue)}
-            >
-              <Picker.Item label="Light Tease" value={0} />
-              <Picker.Item label="Good Ribbing" value={1} />
-              <Picker.Item label="Fiery Burn" value={2} />
-              <Picker.Item label="Scorching Hot" value={3} />
-            </Picker>
+              <Picker
+                dropdownIconColor={"#fff"}
+                selectedValue={roastLevel}
+                style={styles.picker}
+                onValueChange={(itemValue, itemIndex) => setRoastLevel(itemValue)}
+              >
+                <Picker.Item label="Light Tease" value={0} />
+                <Picker.Item label="Good Ribbing" value={1} />
+                <Picker.Item label="Fiery Burn" value={2} />
+                <Picker.Item label="Scorching Hot" value={3} />
+              </Picker>
             </View>
             <View style={styles.picketContainer}>
               <Picker
-              dropdownIconColor={"#fff"}
-              selectedValue={language}
-              style={styles.picker}
-              onValueChange={(itemValue, itemIndex) => setLanguage(itemValue)}
-            >
-              <Picker.Item label="English" value="english" />
-              <Picker.Item label="Hindi (Transliteration)" value="hindi-transliteration" />
-              <Picker.Item label="Hindi" value="hindi" />
-              <Picker.Item label="Telugu" value="telugu" />
-              <Picker.Item label="Bengali" value="bengali" />
-              <Picker.Item label="Gujarati" value="gujarati" />
-              <Picker.Item label="Kannada" value="kannada" />
-              <Picker.Item label="Malayalam" value="malayalam" />
-              <Picker.Item label="Marathi" value="marathi" />
-              <Picker.Item label="Punjabi" value="punjabi" />
-              <Picker.Item label="Tamil" value="tamil" />
-              <Picker.Item label="Urdu" value="urdu" />
-              <Picker.Item label="Arabic" value="arabic" />
-              <Picker.Item label="Spanish" value="spanish" />
-              <Picker.Item label="French" value="french" />
-              <Picker.Item label="German" value="german" />
-              <Picker.Item label="Italian" value="italian" />
-              <Picker.Item label="Portuguese" value="portuguese" />
-              <Picker.Item label="Dutch" value="dutch" />
-              <Picker.Item label="Russian" value="russian" />
-              <Picker.Item label="Swedish" value="swedish" />
-              <Picker.Item label="Danish" value="danish" />
-              <Picker.Item label="Norwegian" value="norwegian" />
-              <Picker.Item label="Finnish" value="finnish" />
-              <Picker.Item label="Greek" value="greek" />
-              
-
-            </Picker>
+                dropdownIconColor={"#fff"}
+                selectedValue={language}
+                style={styles.picker}
+                onValueChange={(itemValue, itemIndex) => setLanguage(itemValue)}
+              >
+                <Picker.Item label="English" value="english" />
+                <Picker.Item label="Hindi (Transliteration)" value="hindi-transliteration" />
+                <Picker.Item label="Hindi" value="hindi" />
+                <Picker.Item label="Telugu" value="telugu" />
+                <Picker.Item label="Bengali" value="bengali" />
+                <Picker.Item label="Gujarati" value="gujarati" />
+                <Picker.Item label="Kannada" value="kannada" />
+                <Picker.Item label="Malayalam" value="malayalam" />
+                <Picker.Item label="Marathi" value="marathi" />
+                <Picker.Item label="Punjabi" value="punjabi" />
+                <Picker.Item label="Tamil" value="tamil" />
+                <Picker.Item label="Urdu" value="urdu" />
+                <Picker.Item label="Arabic" value="arabic" />
+                <Picker.Item label="Spanish" value="spanish" />
+                <Picker.Item label="French" value="french" />
+                <Picker.Item label="German" value="german" />
+                <Picker.Item label="Italian" value="italian" />
+                <Picker.Item label="Portuguese" value="portuguese" />
+                <Picker.Item label="Dutch" value="dutch" />
+                <Picker.Item label="Russian" value="russian" />
+                <Picker.Item label="Swedish" value="swedish" />
+                <Picker.Item label="Danish" value="danish" />
+                <Picker.Item label="Norwegian" value="norwegian" />
+                <Picker.Item label="Finnish" value="finnish" />
+                <Picker.Item label="Greek" value="greek" />
+              </Picker>
             </View>
             <TouchableOpacity style={styles.generateButton} onPress={handleGenerateRoastFromImage}>
               <Text style={styles.buttonText}>Generate Roast</Text>
             </TouchableOpacity>
-            
-            </View>
-          
+          </View>
         </Modal>
       </SafeAreaView>
     </LinearGradient>
@@ -299,7 +350,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
-    
   },
   header: {
     flex: 1,
@@ -372,7 +422,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',
-    marginVertical:50,
+    marginVertical: 50,
   },
   buttonText: {
     color: '#fff',
@@ -386,19 +436,19 @@ const styles = StyleSheet.create({
     padding: 0,
     width: "100%",
   },
-  modalContent:{
+  modalContent: {
     width: "100%",
     flex: 0.875,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
     backgroundColor: '#1C1C1E',
-    padding: 20, 
+    padding: 20,
     paddingTop: 50,
   },
   modalTitle: {
     color: '#fff',
     fontSize: 20,
-    marginBottom:30,
+    marginBottom: 30,
     fontWeight: 'bold',
   },
   describeInput: {
@@ -410,7 +460,6 @@ const styles = StyleSheet.create({
     borderColor: "#fff",
     borderRadius: 10,
     color: "#fff",
-
   },
   picketContainer: {
     marginVertical: 10,
@@ -421,7 +470,6 @@ const styles = StyleSheet.create({
     width: '100%',
     color: '#fff',
     backgroundColor: '#1C1C1E',
-    
   },
 });
 
