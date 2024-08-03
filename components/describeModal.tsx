@@ -18,6 +18,14 @@ const DescribeModal: React.FC = () => {
 
   const handleGenerateRoast = () => {
     console.log("Generating roast...");
+    console.log(
+      "Description:",
+      description,
+      " Roast level:",
+      roastLevel,
+      "Language:",
+      language
+    );
   };
   return (
     <>

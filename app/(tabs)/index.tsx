@@ -17,6 +17,7 @@ import LinearGradient from "react-native-linear-gradient";
 import Card from "@/components/Card";
 import Modal from "@/components/Modal";
 import DescribeModal from "@/components/describeModal";
+import UploadModal from "@/components/uploadModal";
 
 const encodeImageToBase64 = async (uri: string): Promise<string> => {
   const response = await fetch(uri);
@@ -228,7 +229,7 @@ function App(): React.JSX.Element {
         </View>
         <View style={styles.cardContainer}>
           {/* <Card cardText="Upload Image" onPress={()=>handleFilePicker()}/> */}
-
+          <UploadModal />
           <DescribeModal />
         </View>
         {roastResult ? (
@@ -239,61 +240,6 @@ function App(): React.JSX.Element {
             </Text>
           </View>
         ) : null}
-
-        {/* <Modal isVisible={isImageModalVisible} onBackdropPress={() => setIsImageModalVisible(false)}
-          >
-            <Text style={styles.modalTitle}>Upload an image to roast</Text>
-            <View style={styles.picketContainer}>
-              <Picker
-                dropdownIconColor={"#fff"}
-                selectedValue={roastLevel}
-                style={styles.picker}
-                onValueChange={(itemValue, itemIndex) => setRoastLevel(itemValue)}
-              >
-                <Picker.Item label="Light Tease" value={0} />
-                <Picker.Item label="Good Ribbing" value={1} />
-                <Picker.Item label="Fiery Burn" value={2} />
-                <Picker.Item label="Scorching Hot" value={3} />
-              </Picker>
-            </View>
-            <View style={styles.picketContainer}>
-              <Picker
-                dropdownIconColor={"#fff"}
-                selectedValue={language}
-                style={styles.picker}
-                onValueChange={(itemValue, itemIndex) => setLanguage(itemValue)}
-              >
-                <Picker.Item label="English" value="english" />
-                <Picker.Item label="Hindi (Transliteration)" value="hindi-transliteration" />
-                <Picker.Item label="Hindi" value="hindi" />
-                <Picker.Item label="Telugu" value="telugu" />
-                <Picker.Item label="Bengali" value="bengali" />
-                <Picker.Item label="Gujarati" value="gujarati" />
-                <Picker.Item label="Kannada" value="kannada" />
-                <Picker.Item label="Malayalam" value="malayalam" />
-                <Picker.Item label="Marathi" value="marathi" />
-                <Picker.Item label="Punjabi" value="punjabi" />
-                <Picker.Item label="Tamil" value="tamil" />
-                <Picker.Item label="Urdu" value="urdu" />
-                <Picker.Item label="Arabic" value="arabic" />
-                <Picker.Item label="Spanish" value="spanish" />
-                <Picker.Item label="French" value="french" />
-                <Picker.Item label="German" value="german" />
-                <Picker.Item label="Italian" value="italian" />
-                <Picker.Item label="Portuguese" value="portuguese" />
-                <Picker.Item label="Dutch" value="dutch" />
-                <Picker.Item label="Russian" value="russian" />
-                <Picker.Item label="Swedish" value="swedish" />
-                <Picker.Item label="Danish" value="danish" />
-                <Picker.Item label="Norwegian" value="norwegian" />
-                <Picker.Item label="Finnish" value="finnish" />
-                <Picker.Item label="Greek" value="greek" />
-              </Picker>
-            </View>
-            <TouchableOpacity style={styles.generateButton} onPress={handleGenerateRoastFromImage}>
-              <Text style={styles.buttonText}>Generate Roast</Text>
-            </TouchableOpacity>
-        </Modal> */}
       </SafeAreaView>
     </LinearGradient>
   );
