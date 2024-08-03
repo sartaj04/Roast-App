@@ -34,10 +34,16 @@ const DescribeModal: React.FC<DescribeModalProps> = ({
       "Language:",
       language
     );
+    console.log("Free generates remaining:", freeGenerates);
+    setFreeGenerates(freeGenerates - 1);
   };
   return (
     <>
-      <Card cardText="Describe your roast" onPress={() => setIsVisible(true)} />
+      <Card
+        cardText="Describe your roast"
+        onPress={() => setIsVisible(true)}
+        disabled={freeGenerates <= 0}
+      />
       <Modal
         modalTitle="Describe your roast"
         isVisible={isVisible}
@@ -105,9 +111,13 @@ const DescribeModal: React.FC<DescribeModalProps> = ({
         </View>
 
         <TouchableOpacity
-          style={styles.generateButton}
+          style={[
+            styles.generateButton,
+            { opacity: freeGenerates <= 0 ? 0.7 : 1 },
+          ]}
           onPress={() => handleGenerateRoast()}
           activeOpacity={0.8}
+          disabled={freeGenerates <= 0}
         >
           <Text style={styles.buttonText}>Generate Roast</Text>
         </TouchableOpacity>

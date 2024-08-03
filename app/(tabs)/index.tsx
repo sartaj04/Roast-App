@@ -212,6 +212,13 @@ function App(): React.JSX.Element {
         <View style={styles.header}>
           <Text style={styles.logoText}>Roast Master</Text>
         </View>
+        {freeGenerates <= 0 ? (
+          <View style={{ marginBottom: 10 }}>
+            <Text style={{ fontSize: 15, color: "white" }}>
+              Please buy tokens to generate more roasts.
+            </Text>
+          </View>
+        ) : null}
         <View style={styles.cardContainer}>
           <UploadModal
             freeGenerates={freeGenerates}
@@ -249,7 +256,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 5,
   },
   logoText: {
     fontSize: 28,

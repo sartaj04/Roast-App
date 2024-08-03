@@ -37,7 +37,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
       console.error("Error picking document:", error);
     }
   };
-  const handleGenerateRoastFromImage = () => {
+  const handleGenerateRoast = () => {
     console.log("Generating roast from image...");
     console.log(
       "Roast level:",
@@ -47,11 +47,17 @@ const UploadModal: React.FC<UploadModalProps> = ({
       " Image:",
       image
     );
+    console.log("Free generates remaining:", freeGenerates);
+    setFreeGenerates(freeGenerates - 1);
   };
 
   return (
     <>
-      <Card cardText="Upload a roast" onPress={() => pickDocument()} />
+      <Card
+        cardText="Upload a roast"
+        onPress={() => pickDocument()}
+        disabled={freeGenerates <= 0}
+      />
       <Modal
         modalTitle="Upload a roast"
         isVisible={isVisible}
@@ -119,8 +125,13 @@ const UploadModal: React.FC<UploadModalProps> = ({
           </Picker>
         </View>
         <TouchableOpacity
-          style={styles.generateButton}
-          onPress={handleGenerateRoastFromImage}
+          style={[
+            styles.generateButton,
+            { opacity: freeGenerates <= 0 ? 0.7 : 1 },
+          ]}
+          onPress={() => handleGenerateRoast()}
+          activeOpacity={0.8}
+          disabled={freeGenerates <= 0}
         >
           <Text style={styles.buttonText}>Generate Roast</Text>
         </TouchableOpacity>
