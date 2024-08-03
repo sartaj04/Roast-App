@@ -4,18 +4,10 @@ import {
   StatusBar,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
   View,
-  Alert,
   useColorScheme,
 } from "react-native";
-import axios from "axios";
-import DocumentPicker from "react-native-document-picker";
-import { Picker } from "@react-native-picker/picker";
 import LinearGradient from "react-native-linear-gradient";
-import Card from "@/components/Card";
-import Modal from "@/components/Modal";
 import DescribeModal from "@/components/describeModal";
 import UploadModal from "@/components/uploadModal";
 
