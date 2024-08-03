@@ -10,7 +10,15 @@ import {
 } from "react-native";
 import Card from "./Card";
 
-const DescribeModal: React.FC = () => {
+interface DescribeModalProps {
+  freeGenerates: number;
+  setFreeGenerates: React.Dispatch<React.SetStateAction<number>>;
+}
+
+const DescribeModal: React.FC<DescribeModalProps> = ({
+  freeGenerates,
+  setFreeGenerates,
+}) => {
   const [isVisible, setIsVisible] = useState(false);
   const [description, setDescription] = useState("");
   const [roastLevel, setRoastLevel] = useState(0);

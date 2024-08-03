@@ -5,7 +5,15 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from "expo-document-picker";
 
-const UploadModal: React.FC = () => {
+interface UploadModalProps {
+  freeGenerates: number;
+  setFreeGenerates: React.Dispatch<React.SetStateAction<number>>;
+}
+
+const UploadModal: React.FC<UploadModalProps> = ({
+  freeGenerates,
+  setFreeGenerates,
+}) => {
   const [isVisible, setIsVisible] = useState(false);
   const [roastLevel, setRoastLevel] = useState(0);
   const [language, setLanguage] = useState("english");

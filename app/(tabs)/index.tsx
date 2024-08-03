@@ -28,15 +28,8 @@ const encodeImageToBase64 = async (uri: string): Promise<string> => {
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === "dark";
-  const [description, setDescription] = useState("");
-  const [roastLevel, setRoastLevel] = useState(0); // Default to "mild"
-  const [language, setLanguage] = useState("en"); // Default to English
   const [roastResult, setRoastResult] = useState("");
   const [freeGenerates, setFreeGenerates] = useState(5);
-  const [describtionModalIsVisible, setDescribtionModalIsVisible] =
-    useState(false);
-  const [isImageModalVisible, setIsImageModalVisible] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<any>(null);
 
   // const openAI_APIKey =
   //   "sk-proj-QcFy0UGdb8EFfBJaKZ2fT3BlbkFJ9zhygX0fmxTxSuXqOxFw"; // Replace with your OpenAI API key
@@ -220,9 +213,14 @@ function App(): React.JSX.Element {
           <Text style={styles.logoText}>Roast Master</Text>
         </View>
         <View style={styles.cardContainer}>
-          {/* <Card cardText="Upload Image" onPress={()=>handleFilePicker()}/> */}
-          <UploadModal />
-          <DescribeModal />
+          <UploadModal
+            freeGenerates={freeGenerates}
+            setFreeGenerates={setFreeGenerates}
+          />
+          <DescribeModal
+            freeGenerates={freeGenerates}
+            setFreeGenerates={setFreeGenerates}
+          />
         </View>
         {roastResult ? (
           <View style={styles.resultContainer}>
