@@ -2,6 +2,8 @@ import { useState } from "react";
 import Modal from "./Modal";
 import { Picker } from "@react-native-picker/picker";
 import {
+  KeyboardAvoidingView,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -24,6 +26,7 @@ const DescribeModal: React.FC<DescribeModalProps> = ({
   const [description, setDescription] = useState("");
   const [roastLevel, setRoastLevel] = useState(0);
   const [language, setLanguage] = useState("english");
+  const [roastResult, setRoastResult] = useState("");
 
   const handleGenerateRoast = () => {
     if (!description) {
@@ -45,7 +48,7 @@ const DescribeModal: React.FC<DescribeModalProps> = ({
     try {
       getRoastByDesc({ description, roastLevel, language })
         .then((res) => {
-          alert(res.data.choices[0].message.content);
+          setRoastResult(res.data.choices[0].message.content);
           setFreeGenerates(freeGenerates - 1);
         })
         .catch((error) => {
@@ -73,78 +76,107 @@ const DescribeModal: React.FC<DescribeModalProps> = ({
         isVisible={isVisible}
         onBackdropPress={() => handleCloseModal()}
       >
-        <TextInput
-          placeholder="Enter a detailed description of the person"
-          value={description}
-          onChangeText={(text) => setDescription(text)}
-          keyboardType="numbers-and-punctuation"
-          multiline
-          style={styles.describeInput}
-          placeholderTextColor={"#fff"}
-          numberOfLines={10}
-        />
-        <View style={styles.picketContainer}>
-          <Picker
-            dropdownIconColor={"#fff"}
-            selectedValue={roastLevel}
-            style={styles.picker}
-            onValueChange={(itemValue, itemIndex) => setRoastLevel(itemValue)}
-          >
-            <Picker.Item label="Light Tease" value={0} />
-            <Picker.Item label="Good Ribbing" value={1} />
-            <Picker.Item label="Fiery Burn" value={2} />
-            <Picker.Item label="Scorching Hot" value={3} />
-          </Picker>
-        </View>
-        <View style={styles.picketContainer}>
-          <Picker
-            dropdownIconColor={"#fff"}
-            selectedValue={language}
-            style={styles.picker}
-            onValueChange={(itemValue, itemIndex) => setLanguage(itemValue)}
-          >
-            <Picker.Item label="English" value="english" />
-            <Picker.Item
-              label="Hindi (Transliteration)"
-              value="hindi-transliteration"
+        {roastResult === "" ? (
+          <>
+            <TextInput
+              placeholder="Enter a detailed description of the person"
+              value={description}
+              onChangeText={(text) => setDescription(text)}
+              keyboardType="numbers-and-punctuation"
+              multiline
+              style={styles.describeInput}
+              placeholderTextColor={"#fff"}
+              numberOfLines={10}
             />
-            <Picker.Item label="Hindi" value="hindi" />
-            <Picker.Item label="Telugu" value="telugu" />
-            <Picker.Item label="Bengali" value="bengali" />
-            <Picker.Item label="Gujarati" value="gujarati" />
-            <Picker.Item label="Kannada" value="kannada" />
-            <Picker.Item label="Malayalam" value="malayalam" />
-            <Picker.Item label="Marathi" value="marathi" />
-            <Picker.Item label="Punjabi" value="punjabi" />
-            <Picker.Item label="Tamil" value="tamil" />
-            <Picker.Item label="Urdu" value="urdu" />
-            <Picker.Item label="Arabic" value="arabic" />
-            <Picker.Item label="Spanish" value="spanish" />
-            <Picker.Item label="French" value="french" />
-            <Picker.Item label="German" value="german" />
-            <Picker.Item label="Italian" value="italian" />
-            <Picker.Item label="Portuguese" value="portuguese" />
-            <Picker.Item label="Dutch" value="dutch" />
-            <Picker.Item label="Russian" value="russian" />
-            <Picker.Item label="Swedish" value="swedish" />
-            <Picker.Item label="Danish" value="danish" />
-            <Picker.Item label="Norwegian" value="norwegian" />
-            <Picker.Item label="Finnish" value="finnish" />
-            <Picker.Item label="Greek" value="greek" />
-          </Picker>
-        </View>
+            <View style={styles.picketContainer}>
+              <Picker
+                dropdownIconColor={"#fff"}
+                selectedValue={roastLevel}
+                style={styles.picker}
+                onValueChange={(itemValue, itemIndex) =>
+                  setRoastLevel(itemValue)
+                }
+              >
+                <Picker.Item label="Light Tease" value={0} />
+                <Picker.Item label="Good Ribbing" value={1} />
+                <Picker.Item label="Fiery Burn" value={2} />
+                <Picker.Item label="Scorching Hot" value={3} />
+              </Picker>
+            </View>
+            <View style={styles.picketContainer}>
+              <Picker
+                dropdownIconColor={"#fff"}
+                selectedValue={language}
+                style={styles.picker}
+                onValueChange={(itemValue, itemIndex) => setLanguage(itemValue)}
+              >
+                <Picker.Item label="English" value="english" />
+                <Picker.Item
+                  label="Hindi (Transliteration)"
+                  value="hindi-transliteration"
+                />
+                <Picker.Item label="Hindi" value="hindi" />
+                <Picker.Item label="Telugu" value="telugu" />
+                <Picker.Item label="Bengali" value="bengali" />
+                <Picker.Item label="Gujarati" value="gujarati" />
+                <Picker.Item label="Kannada" value="kannada" />
+                <Picker.Item label="Malayalam" value="malayalam" />
+                <Picker.Item label="Marathi" value="marathi" />
+                <Picker.Item label="Punjabi" value="punjabi" />
+                <Picker.Item label="Tamil" value="tamil" />
+                <Picker.Item label="Urdu" value="urdu" />
+                <Picker.Item label="Arabic" value="arabic" />
+                <Picker.Item label="Spanish" value="spanish" />
+                <Picker.Item label="French" value="french" />
+                <Picker.Item label="German" value="german" />
+                <Picker.Item label="Italian" value="italian" />
+                <Picker.Item label="Portuguese" value="portuguese" />
+                <Picker.Item label="Dutch" value="dutch" />
+                <Picker.Item label="Russian" value="russian" />
+                <Picker.Item label="Swedish" value="swedish" />
+                <Picker.Item label="Danish" value="danish" />
+                <Picker.Item label="Norwegian" value="norwegian" />
+                <Picker.Item label="Finnish" value="finnish" />
+                <Picker.Item label="Greek" value="greek" />
+              </Picker>
+            </View>
 
-        <TouchableOpacity
-          style={[
-            styles.generateButton,
-            { opacity: freeGenerates <= 0 ? 0.7 : 1 },
-          ]}
-          onPress={() => handleGenerateRoast()}
-          activeOpacity={0.8}
-          disabled={freeGenerates <= 0}
-        >
-          <Text style={styles.buttonText}>Generate Roast</Text>
-        </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.generateButton,
+                { opacity: freeGenerates <= 0 ? 0.7 : 1 },
+              ]}
+              onPress={() => handleGenerateRoast()}
+              activeOpacity={0.8}
+              disabled={freeGenerates <= 0}
+            >
+              <Text style={styles.buttonText}>Generate Roast</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <Text
+              style={{
+                color: "#fff",
+                textAlign: "left",
+                marginBottom: 20,
+                fontSize: 20,
+                fontWeight: "bold",
+              }}
+            >
+              Here is your roast!
+            </Text>
+            <TextInput
+              placeholder="Please wait for your roast!"
+              value={roastResult}
+              keyboardType="numbers-and-punctuation"
+              multiline
+              style={styles.describeInput}
+              placeholderTextColor={"#fff"}
+              numberOfLines={10}
+            />
+          </>
+        )}
       </Modal>
     </>
   );
