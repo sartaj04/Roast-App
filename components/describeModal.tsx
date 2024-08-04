@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import Card from "./Card";
+import { getRoastByDesc } from "@/app/(tabs)/api/getRoastByDesc";
 
 interface DescribeModalProps {
   freeGenerates: number;
@@ -25,17 +26,40 @@ const DescribeModal: React.FC<DescribeModalProps> = ({
   const [language, setLanguage] = useState("english");
 
   const handleGenerateRoast = () => {
-    console.log("Generating roast...");
-    console.log(
-      "Description:",
-      description,
-      " Roast level:",
-      roastLevel,
-      "Language:",
-      language
-    );
-    console.log("Free generates remaining:", freeGenerates);
-    setFreeGenerates(freeGenerates - 1);
+    if (!description) {
+      alert("Please enter a description");
+      return;
+    }
+    if (description.length < 10) {
+      alert("Description should be atleast 10 characters long");
+      return;
+    }
+    if (roastLevel < 0 || roastLevel > 3) {
+      alert("Invalid roast level");
+      return;
+    }
+    if (!language) {
+      alert("Please select a language");
+      return;
+    }
+    try {
+      getRoastByDesc({ description, roastLevel, language })
+        .then((res) => {
+          alert(res.data.choices[0].message.content);
+          setFreeGenerates(freeGenerates - 1);
+        })
+        .catch((error) => {
+          alert(`Error: ${error.response.data.error.message}`);
+        });
+    } catch (error) {
+      alert("Something went wrong");
+    }
+  };
+  const handleCloseModal = () => {
+    setIsVisible(false);
+    setDescription("");
+    setRoastLevel(0);
+    setLanguage("english");
   };
   return (
     <>
@@ -47,7 +71,7 @@ const DescribeModal: React.FC<DescribeModalProps> = ({
       <Modal
         modalTitle="Describe your roast"
         isVisible={isVisible}
-        onBackdropPress={() => setIsVisible(false)}
+        onBackdropPress={() => handleCloseModal()}
       >
         <TextInput
           placeholder="Enter a detailed description of the person"
