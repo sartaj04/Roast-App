@@ -4,6 +4,8 @@ import Modal from "./Modal";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from "expo-document-picker";
+import { getRoastByImage } from "@/app/(tabs)/api/getRoastByImage";
+import RNFS from "react-native-fs";
 
 interface UploadModalProps {
   freeGenerates: number;
@@ -28,8 +30,10 @@ const UploadModal: React.FC<UploadModalProps> = ({
 
       if (result.canceled === false) {
         console.log("Document picked:", result);
-        setImage(result.assets[0].uri);
-        setIsVisible(true);
+        RNFS.readFile(result.assets[0].uri, "base64").then((data) => {
+          setImage(`data:image/jpeg;base64,${data}`);
+          setIsVisible(true);
+        });
       } else {
         console.log("Document picking was cancelled.");
       }
@@ -38,17 +42,14 @@ const UploadModal: React.FC<UploadModalProps> = ({
     }
   };
   const handleGenerateRoast = () => {
-    console.log("Generating roast from image...");
-    console.log(
-      "Roast level:",
-      roastLevel,
-      " Language:",
-      language,
-      " Image:",
-      image
-    );
-    console.log("Free generates remaining:", freeGenerates);
-    setFreeGenerates(freeGenerates - 1);
+    getRoastByImage({ image, roastLevel, language })
+      .then((res) => {
+        alert(res.data.choices[0].message.content);
+        setFreeGenerates(freeGenerates - 1);
+      })
+      .catch((error) => {
+        console.error("Roast Error:", error.response.data);
+      });
   };
 
   return (

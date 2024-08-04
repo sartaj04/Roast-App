@@ -1,5 +1,5 @@
 import axios from "axios";
-import { OPEN_AI_API_KEY, RoastLevels } from "./BASE";
+import { BASE_URL, OPEN_AI_API_KEY, RoastLevels } from "./BASE";
 
 interface GetRoastByDescData {
   description: string;
@@ -9,7 +9,7 @@ interface GetRoastByDescData {
 
 export const getRoastByDesc = async (data: GetRoastByDescData) => {
   return axios.post(
-    "https://api.openai.com/v1/chat/completions",
+    BASE_URL,
     {
       model: "gpt-3.5-turbo",
       max_tokens: 150,
