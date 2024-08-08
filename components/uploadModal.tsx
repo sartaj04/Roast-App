@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Card from "./Card";
 import Modal from "./Modal";
 import {
@@ -13,6 +13,7 @@ import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from "expo-document-picker";
 import RNFS from "react-native-fs";
 import { getRoastByImage } from "@/api/getRoastByImage";
+import { useMutation } from "@tanstack/react-query";
 
 interface UploadModalProps {
   freeGenerates: number;
@@ -28,6 +29,16 @@ const UploadModal: React.FC<UploadModalProps> = ({
   const [language, setLanguage] = useState("english");
   const [image, setImage] = useState("");
   const [roast, setRoast] = useState("");
+  const {
+    data,
+    mutate: imageRoastMutation,
+    isPending,
+    isSuccess,
+    isError,
+    error,
+  } = useMutation({
+    mutationFn: getRoastByImage,
+  });
   const pickDocument = async () => {
     try {
       const result: DocumentPicker.DocumentPickerResult =
@@ -37,7 +48,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
         });
 
       if (result.canceled === false) {
-        console.log("Document picked:", result);
+        //console.log("Document picked:", result);
         RNFS.readFile(result.assets[0].uri, "base64").then((data) => {
           setImage(`data:image/jpeg;base64,${data}`);
           setIsVisible(true);
@@ -50,14 +61,26 @@ const UploadModal: React.FC<UploadModalProps> = ({
     }
   };
   const handleGenerateRoast = () => {
-    getRoastByImage({ image, roastLevel, language })
-      .then((res) => {
-        setRoast(res.data.choices[0].message.content);
-        setFreeGenerates(freeGenerates - 1);
-      })
-      .catch((error) => {
-        console.error("Roast Error:", error.response.data);
-      });
+    if (image === "") {
+      alert("Please upload an image");
+      return;
+    }
+    imageRoastMutation({ image, roastLevel, language });
+  };
+  useEffect(() => {
+    if (isSuccess) {
+      setRoast(data.data.choices[0].message.content);
+    }
+    if (isError) {
+      alert(`Error: ${error.message}`);
+    }
+  }, [isSuccess, isError]);
+  const handleCloseModal = () => {
+    setIsVisible(false);
+    setRoastLevel(0);
+    setLanguage("english");
+    setImage("");
+    setRoast("");
   };
 
   return (
@@ -70,107 +93,125 @@ const UploadModal: React.FC<UploadModalProps> = ({
       <Modal
         modalTitle="Upload a roast"
         isVisible={isVisible}
-        onBackdropPress={() => setIsVisible(false)}
+        onBackdropPress={() => handleCloseModal()}
+        isLoading={isPending}
       >
-        {roast === "" ? (
-          <>
-            {image === "" ? null : (
-              <Image
-                source={{ uri: image }}
-                style={{
-                  width: 200,
-                  height: 200,
-                  alignSelf: "center",
-                }}
-              />
-            )}
-
-            <View style={styles.picketContainer}>
-              <Picker
-                dropdownIconColor={"#fff"}
-                selectedValue={roastLevel}
-                style={styles.picker}
-                onValueChange={(itemValue, itemIndex) =>
-                  setRoastLevel(itemValue)
-                }
-              >
-                <Picker.Item label="Light Tease" value={0} />
-                <Picker.Item label="Good Ribbing" value={1} />
-                <Picker.Item label="Fiery Burn" value={2} />
-                <Picker.Item label="Scorching Hot" value={3} />
-              </Picker>
-            </View>
-            <View style={styles.picketContainer}>
-              <Picker
-                dropdownIconColor={"#fff"}
-                selectedValue={language}
-                style={styles.picker}
-                onValueChange={(itemValue, itemIndex) => setLanguage(itemValue)}
-              >
-                <Picker.Item label="English" value="english" />
-                <Picker.Item
-                  label="Hindi (Transliteration)"
-                  value="hindi-transliteration"
-                />
-                <Picker.Item label="Hindi" value="hindi" />
-                <Picker.Item label="Telugu" value="telugu" />
-                <Picker.Item label="Bengali" value="bengali" />
-                <Picker.Item label="Gujarati" value="gujarati" />
-                <Picker.Item label="Kannada" value="kannada" />
-                <Picker.Item label="Malayalam" value="malayalam" />
-                <Picker.Item label="Marathi" value="marathi" />
-                <Picker.Item label="Punjabi" value="punjabi" />
-                <Picker.Item label="Tamil" value="tamil" />
-                <Picker.Item label="Urdu" value="urdu" />
-                <Picker.Item label="Arabic" value="arabic" />
-                <Picker.Item label="Spanish" value="spanish" />
-                <Picker.Item label="French" value="french" />
-                <Picker.Item label="German" value="german" />
-                <Picker.Item label="Italian" value="italian" />
-                <Picker.Item label="Portuguese" value="portuguese" />
-                <Picker.Item label="Dutch" value="dutch" />
-                <Picker.Item label="Russian" value="russian" />
-                <Picker.Item label="Swedish" value="swedish" />
-                <Picker.Item label="Danish" value="danish" />
-                <Picker.Item label="Norwegian" value="norwegian" />
-                <Picker.Item label="Finnish" value="finnish" />
-                <Picker.Item label="Greek" value="greek" />
-              </Picker>
-            </View>
-            <TouchableOpacity
-              style={[
-                styles.generateButton,
-                { opacity: freeGenerates <= 0 ? 0.7 : 1 },
-              ]}
-              onPress={() => handleGenerateRoast()}
-              activeOpacity={0.8}
-              disabled={freeGenerates <= 0}
-            >
-              <Text style={styles.buttonText}>Generate Roast</Text>
-            </TouchableOpacity>
-          </>
+        {isPending ? (
+          <Text
+            style={{
+              flex: 1,
+              textAlign: "center",
+              textAlignVertical: "center",
+              color: "white",
+            }}
+          >
+            Loading...
+          </Text>
         ) : (
           <>
-            <Text
-              style={{
-                color: "#fff",
-                textAlign: "left",
-                marginBottom: 20,
-                fontSize: 20,
-                fontWeight: "bold",
-              }}
-            >
-              Here is your roast!
-            </Text>
-            <TextInput
-              placeholder="Please wait for your roast!"
-              value={roast}
-              keyboardType="numbers-and-punctuation"
-              multiline
-              style={styles.describeInput}
-              placeholderTextColor={"#fff"}
-              numberOfLines={10}
-            />
+            {roast === "" ? (
+              <>
+                {image === "" ? null : (
+                  <Image
+                    source={{ uri: image }}
+                    style={{
+                      width: 200,
+                      height: 200,
+                      alignSelf: "center",
+                    }}
+                  />
+                )}
+
+                <View style={styles.picketContainer}>
+                  <Picker
+                    dropdownIconColor={"#fff"}
+                    selectedValue={roastLevel}
+                    style={styles.picker}
+                    onValueChange={(itemValue, itemIndex) =>
+                      setRoastLevel(itemValue)
+                    }
+                  >
+                    <Picker.Item label="Light Tease" value={0} />
+                    <Picker.Item label="Good Ribbing" value={1} />
+                    <Picker.Item label="Fiery Burn" value={2} />
+                    <Picker.Item label="Scorching Hot" value={3} />
+                  </Picker>
+                </View>
+                <View style={styles.picketContainer}>
+                  <Picker
+                    dropdownIconColor={"#fff"}
+                    selectedValue={language}
+                    style={styles.picker}
+                    onValueChange={(itemValue, itemIndex) =>
+                      setLanguage(itemValue)
+                    }
+                  >
+                    <Picker.Item label="English" value="english" />
+                    <Picker.Item
+                      label="Hindi (Transliteration)"
+                      value="hindi-transliteration"
+                    />
+                    <Picker.Item label="Hindi" value="hindi" />
+                    <Picker.Item label="Telugu" value="telugu" />
+                    <Picker.Item label="Bengali" value="bengali" />
+                    <Picker.Item label="Gujarati" value="gujarati" />
+                    <Picker.Item label="Kannada" value="kannada" />
+                    <Picker.Item label="Malayalam" value="malayalam" />
+                    <Picker.Item label="Marathi" value="marathi" />
+                    <Picker.Item label="Punjabi" value="punjabi" />
+                    <Picker.Item label="Tamil" value="tamil" />
+                    <Picker.Item label="Urdu" value="urdu" />
+                    <Picker.Item label="Arabic" value="arabic" />
+                    <Picker.Item label="Spanish" value="spanish" />
+                    <Picker.Item label="French" value="french" />
+                    <Picker.Item label="German" value="german" />
+                    <Picker.Item label="Italian" value="italian" />
+                    <Picker.Item label="Portuguese" value="portuguese" />
+                    <Picker.Item label="Dutch" value="dutch" />
+                    <Picker.Item label="Russian" value="russian" />
+                    <Picker.Item label="Swedish" value="swedish" />
+                    <Picker.Item label="Danish" value="danish" />
+                    <Picker.Item label="Norwegian" value="norwegian" />
+                    <Picker.Item label="Finnish" value="finnish" />
+                    <Picker.Item label="Greek" value="greek" />
+                  </Picker>
+                </View>
+                <TouchableOpacity
+                  style={[
+                    styles.generateButton,
+                    { opacity: freeGenerates <= 0 ? 0.7 : 1 },
+                  ]}
+                  onPress={() => handleGenerateRoast()}
+                  activeOpacity={0.8}
+                  disabled={freeGenerates <= 0}
+                >
+                  <Text style={styles.buttonText}>Generate Roast</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Text
+                  style={{
+                    color: "#fff",
+                    textAlign: "left",
+                    marginBottom: 20,
+                    fontSize: 20,
+                    fontWeight: "bold",
+                  }}
+                >
+                  Here is your roast!
+                </Text>
+                <TextInput
+                  placeholder="Please wait for your roast!"
+                  value={roast}
+                  keyboardType="numbers-and-punctuation"
+                  multiline
+                  style={styles.describeInput}
+                  placeholderTextColor={"#fff"}
+                  numberOfLines={10}
+                />
+              </>
+            )}
           </>
         )}
       </Modal>

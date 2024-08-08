@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import Modal from "./Modal";
 import { Picker } from "@react-native-picker/picker";
 import {
-  KeyboardAvoidingView,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -11,7 +9,7 @@ import {
   View,
 } from "react-native";
 import Card from "./Card";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { getRoastByDesc } from "@/api/getRoastByDesc";
 
 interface DescribeModalProps {
@@ -56,18 +54,6 @@ const DescribeModal: React.FC<DescribeModalProps> = ({
       alert("Please select a language");
       return;
     }
-    // try {
-    //   getRoastByDesc({ description, roastLevel, language })
-    //     .then((res) => {
-    //       setRoastResult(res.data.choices[0].message.content);
-    //       setFreeGenerates(freeGenerates - 1);
-    //     })
-    //     .catch((error) => {
-    //       alert(`Error: ${error.response.data.error.message}`);
-    //     });
-    // } catch (error) {
-    //   alert("Something went wrong");
-    // }
     descRostMutate({ description, roastLevel, language });
   };
   const handleCloseModal = () => {
