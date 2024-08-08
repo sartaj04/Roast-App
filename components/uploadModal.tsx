@@ -70,6 +70,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
   useEffect(() => {
     if (isSuccess) {
       setRoast(data.data.choices[0].message.content);
+      setFreeGenerates(freeGenerates - 1);
     }
     if (isError) {
       alert(`Error: ${error.message}`);

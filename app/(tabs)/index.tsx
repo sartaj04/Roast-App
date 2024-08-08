@@ -11,120 +11,15 @@ import LinearGradient from "react-native-linear-gradient";
 import DescribeModal from "@/components/describeModal";
 import UploadModal from "@/components/uploadModal";
 
-const encodeImageToBase64 = async (uri: string): Promise<string> => {
-  const response = await fetch(uri);
-  const blob = await response.blob();
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64Data = (reader.result as string).split(",")[1]; // Extract base64 part
-      console.log("Base64 Data Preview:", base64Data.slice(0, 50)); // Log first 50 characters
-      resolve(base64Data);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-};
-
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === "dark";
-  const [roastResult, setRoastResult] = useState("");
   const [freeGenerates, setFreeGenerates] = useState(5);
 
-  // const handleGenerateRoastFromImage = async () => {
-  //   if (freeGenerates <= 0) {
-  //     Alert.alert("Limit Reached", "You have used all your free generates.");
-  //     return;
-  //   }
-
-  //   if (!selectedFile) {
-  //     Alert.alert("No File Selected", "Please select a file first.");
-  //     return;
-  //   }
-
-  //   try {
-  //     const base64Image = await encodeImageToBase64(selectedFile.uri);
-  //     console.log("Base64 Image Length:", base64Image.length);
-
-  //     const roastLevelText = [
-  //       "a light tease",
-  //       "a good ribbing",
-  //       "a fiery burn",
-  //       "scorching hot",
-  //     ];
-  //     const prompt = `Create a fun, sassy roast of 250 characters for this image. Make it ${roastLevelText[roastLevel]}. Write the roast in ${language}.`;
-
-  //     const payload = {
-  //       model: "gpt-4o-mini", // Ensure you have access to this model
-  //       messages: [
-  //         {
-  //           role: "user",
-  //           content: [
-  //             { type: "text", text: prompt },
-  //             {
-  //               type: "image_url",
-  //               image_url: { url: `data:image/jpeg;base64,${base64Image}` },
-  //             },
-  //           ],
-  //         },
-  //       ],
-  //       max_tokens: 300,
-  //       temperature: 0.7,
-  //     };
-
-  //     console.log("Payload:", JSON.stringify(payload, null, 2));
-
-  //     const response = await axios.post(
-  //       "https://api.openai.com/v1/chat/completions",
-  //       payload,
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${openAI_APIKey}`,
-  //         },
-  //       }
-  //     );
-
-  //     console.log("Response:", response.data);
-
-  //     const choices = response.data.choices;
-  //     if (choices && choices.length > 0) {
-  //       setRoastResult(choices[0].message.content.trim());
-  //       setFreeGenerates(freeGenerates - 1);
-  //       setIsImageModalVisible(false); // Close the modal after generating the roast
-  //     } else {
-  //       setRoastResult("No response from API.");
-  //     }
-  //   } catch (err) {
-  //     console.error("Error generating roast from image:", err);
-
-  //     if (err.response) {
-  //       console.log("Data:", err.response.data);
-  //       console.log("Status:", err.response.status);
-  //       console.log("Headers:", err.response.headers);
-  //       Alert.alert(
-  //         "Error",
-  //         `API responded with status: ${err.response.status}`
-  //       );
-  //     } else if (err.request) {
-  //       console.log("Request:", err.request);
-  //       Alert.alert("Error", "No response from API server.");
-  //     } else {
-  //       console.log("Error Message:", err.message);
-  //       Alert.alert(
-  //         "Error",
-  //         "Failed to make request. Check console for details."
-  //       );
-  //     }
-  //   }
-  // };
   return (
     <LinearGradient
-      colors={["#a10303", "#4a0404"]}
+      colors={["#CA080C", "#5B0000"]}
       style={styles.gradient}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      angle={90}
+      angle={0}
     >
       <SafeAreaView style={styles.container}>
         <StatusBar
@@ -151,14 +46,6 @@ function App(): React.JSX.Element {
             setFreeGenerates={setFreeGenerates}
           />
         </View>
-        {roastResult ? (
-          <View style={styles.resultContainer}>
-            <Text style={styles.roastText}>{roastResult}</Text>
-            <Text style={styles.freeGeneratesText}>
-              Free Generates Left: {freeGenerates}
-            </Text>
-          </View>
-        ) : null}
       </SafeAreaView>
     </LinearGradient>
   );
