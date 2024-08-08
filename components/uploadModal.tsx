@@ -11,8 +11,8 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from "expo-document-picker";
-import { getRoastByImage } from "@/app/(tabs)/api/getRoastByImage";
 import RNFS from "react-native-fs";
+import { getRoastByImage } from "@/api/getRoastByImage";
 
 interface UploadModalProps {
   freeGenerates: number;

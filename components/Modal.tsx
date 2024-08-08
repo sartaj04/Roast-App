@@ -1,9 +1,11 @@
+import { isLoading } from "expo-font";
 import { StyleSheet, Text, Touchable, View } from "react-native";
 import ReactNativeModal from "react-native-modal";
 interface ModalProps extends React.PropsWithChildren {
   modalTitle: string;
   isVisible: boolean;
   onBackdropPress: () => void;
+  isLoading?: boolean;
 }
 
 const Modal: React.FC<ModalProps> = ({ ...props }) => {
@@ -14,8 +16,9 @@ const Modal: React.FC<ModalProps> = ({ ...props }) => {
       coverScreen
       collapsable
       onBackdropPress={props.onBackdropPress}
-      style={styles.modalContainer}
+      style={[styles.modalContainer]}
       presentationStyle="overFullScreen"
+      pointerEvents={props.isLoading ? "none" : "auto"}
     >
       <View style={styles.modalContentContainer}>
         <View style={styles.modalHeader}>
