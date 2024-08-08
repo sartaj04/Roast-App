@@ -86,12 +86,12 @@ const UploadModal: React.FC<UploadModalProps> = ({
   return (
     <>
       <Card
-        cardText="Upload a roast"
+        cardText="Upload the photo of person you want to roast"
         onPress={() => pickDocument()}
         disabled={freeGenerates <= 0}
       />
       <Modal
-        modalTitle="Upload a roast"
+        modalTitle="Upload the photo of person you want to roast"
         isVisible={isVisible}
         onBackdropPress={() => handleCloseModal()}
         isLoading={isPending}

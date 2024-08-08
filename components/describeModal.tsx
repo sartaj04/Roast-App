@@ -76,12 +76,12 @@ const DescribeModal: React.FC<DescribeModalProps> = ({
   return (
     <>
       <Card
-        cardText="Describe your roast"
+        cardText="Describe the person you want to roast"
         onPress={() => setIsVisible(true)}
         disabled={freeGenerates <= 0}
       />
       <Modal
-        modalTitle="Describe your roast"
+        modalTitle="Describe the person you want to roast"
         isVisible={isVisible}
         onBackdropPress={() => handleCloseModal()}
         isLoading={isPending}
